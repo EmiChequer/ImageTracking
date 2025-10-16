@@ -9,11 +9,11 @@
 </head>
 <body>
     <a-scene
-        mindar-image="imageTargetSrc:"https://github.com/EmiChequer/ImageTracking/blob/main/src/targets.mind;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"
+        mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"
     >
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         <a-entity mindar-image-target="targetIndex: 0">
-            <a-sphere position="0 0 0" radius="0.25" color="#EF2D5E"></a-sphere>
+            <a-gltf-model rotation="0 305 0" position="0 0.1 0.1" scale="0.2 0.2 0.2" src="./Orca3D.glb">
         </a-entity>
     </a-scene>
 </body>
