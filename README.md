@@ -2,7 +2,7 @@
 
 Una aplicación de Realidad Aumentada (AR) que utiliza seguimiento de imágenes para mostrar un modelo 3D animado de una orca con sonido ambiental.
 
-![Orca AR Preview](https://via.placeholder.com/600x300/1e3a8a/ffffff?text=Orca+AR+Experience)
+![Orca AR Preview](ballena1.vercel.app)
 
 ## 🌟 Características
 
