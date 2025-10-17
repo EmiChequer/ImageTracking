@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,71 +8,109 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <title>Image-Tracking</title>
 </head>
+
 <body>
-    <a-scene
-        mindar-image="imageTargetSrc: ./targets.mind;"
-        color-space="sRGB" 
-        renderer="colorManagement: true, physicallyCorrectLights" 
-        vr-mode-ui="enabled: false" 
-        device-orientation-permission-ui="enabled: false"
-    >
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
 
-    <a-assets>
-        <a-asset-item id="Orca-Model" src="./Orca3D.glb"></a-asset-item>
-        <a-sound id="Orca-Sound" src="./orca-sound.mp3" preload="auto" sound></a-sound>
-    </a-assets>
+        <a-assets>
+            <a-asset-item id="Orca-Model" src="./Orca3D.glb"></a-asset-item>
+            <a-sound id="Orca-Sound" src="./orca-sound.mp3" preload="auto" sound="loop: true; volume: 0.8"></a-sound>
+        </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled: false" camera wasd-controls data-aframe-inspector-original-camera></a-camera>
-    
-    <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity scale rotation="90 0 0">
-            <a-gltf-model 
-                id="orca"
-                position="0 0.1 0.1" 
-                rotation="190 90 270" 
-                scale="0.2 0.2 0.2" 
-                src="#Orca-Model" 
-                gltf-model="./Orca3D.glb">
-            </a-gltf-model>
+        <a-camera position="0 0 0" look-controls="enabled: false" camera wasd-controls
+            data-aframe-inspector-original-camera></a-camera>
+
+        <a-entity mindar-image-target="targetIndex: 0">
+            <a-entity scale rotation="90 0 0">
+                <a-gltf-model id="orca" position="0 0.1 0.1" rotation="190 90 270" scale="0.2 0.2 0.2" src="#Orca-Model"
+                    gltf-model="./Orca3D.glb">
+                </a-gltf-model>
+            </a-entity>
         </a-entity>
-    </a-entity>
 
-    <script>
-        const modelo = document.querySelector("#orca");
-        const audio = document.querySelector("#Orca-Sound");
-        const target = document.querySelector("a-entity");
+        <script>
+            const modelo = document.querySelector("#orca");
+            const audio = document.querySelector("#Orca-Sound");
+            const target = document.querySelector("a-entity");
 
-        let modelLoaded = false;
+            let modelLoaded = false;
 
-        // Espera a que el modelo cargue
-        modelo.addEventListener("model-loaded", () => {
-            console.log("✅ Modelo cargado correctamente");
-            modelLoaded = true;
-        });
+            // Espera a que el modelo cargue
+            modelo.addEventListener("model-loaded", () => {
+                console.log("✅ Modelo cargado correctamente");
 
-        // Cuando se detecta la imagen
-        target.addEventListener("targetFound", () => {
-            console.log("🟢 Target detectado");
-            if (modelLoaded) {
-                audio.setAttribute("autoplay", "true");
-                console.log("Entre");
-                modelo.setAttribute("visible", "true");
+                // Verificar el modelo GLB
+                const gltfModel = modelo.components['gltf-model'];
+                if (gltfModel && gltfModel.model) {
+                    console.log("🎯 Animaciones disponibles:", gltfModel.model.animations.length);
+                    gltfModel.model.animations.forEach((anim, index) => {
+                        console.log(`🎵 Animación ${index}:`, anim.name);
+                    });
+
+                    // Usar Three.js directamente para las animaciones
+                    console.log("🎬 Creando mixer Three.js directamente...");
+                    
+                    // Crear mixer de Three.js
+                    const mixer = new THREE.AnimationMixer(gltfModel.model);
+                    const animations = gltfModel.model.animations;
+                    
+                    // Crear acción para la primera animación
+                    const action = mixer.clipAction(animations[0]);
+                    action.setLoop(THREE.LoopRepeat);
+                    action.play();
+                    
+                    console.log("🎵 Animación Three.js iniciada:", animations[0].name);
+                    
+                    // Guardar el mixer en el elemento
+                    modelo.threeMixer = mixer;
+                    
+                    // Crear reloj para actualizar el mixer
+                    const clock = new THREE.Clock();
+                    
+                    // Función de animación
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        if (modelo.threeMixer && modelo.getAttribute('visible')) {
+                            modelo.threeMixer.update(clock.getDelta());
+                        }
+                    }
+                    animate();
+                    
+                    console.log("✅ Sistema de animación Three.js configurado");
+                }
+
+                modelLoaded = true;
+            });
+
+            // Cuando se detecta la imagen
+            target.addEventListener("targetFound", () => {
+                console.log("🟢 Target detectado");
+                if (modelLoaded) {
+                    modelo.setAttribute("visible", "true");
+                    console.log("Entre");
+                    
+                    // Reproducir sonido cuando aparece la orca
+                    console.log("🔊 Reproduciendo sonido de orca...");
+                    audio.components.sound.playSound();
+                    
+                    console.log("🎵 Modelo visible - animación y sonido activos");
+                }
+            });
+
+            // Cuando se pierde el target
+            target.addEventListener("targetLost", () => {
+                console.log("🔴 Target perdido");
+                modelo.setAttribute("visible", "false");
                 
-                // Activar animation-mixer
-                modelo.setAttribute("animation-mixer", "clip: *; loop: repeat;");
-            }
-        });
-
-        // Cuando se pierde el target
-        target.addEventListener("targetLost", () => {
-            console.log("🔴 Target perdido");
-            modelo.setAttribute("visible", "false");
-            modelo.removeAttribute("animation-mixer");
-
-            if (audio.components.sound) {
-                audio.components.sound.stopSound();
-            }
-        });
-    </script>
+                // Detener sonido
+                console.log("🔇 Deteniendo sonido de orca...");
+                if (audio.components.sound) {
+                    audio.components.sound.stopSound();
+                }
+            });
+        </script>
 </body>
+
 </html>
