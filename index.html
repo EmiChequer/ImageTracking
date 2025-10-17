@@ -30,7 +30,6 @@
                 position="0 0.1 0.1" 
                 rotation="190 90 270" 
                 scale="0.2 0.2 0.2" 
-                animation-mixer 
                 src="#Orca-Model" 
                 gltf-model="./Orca3D.glb">
             </a-gltf-model>
@@ -57,7 +56,9 @@
                 audio.setAttribute("autoplay", "true");
                 console.log("Entre");
                 modelo.setAttribute("visible", "true");
-                modelo.setAttribute("animation-mixer", "clip: dolphin|dolphin|A_attack_tail; loop: true;");
+                
+                // Activar animation-mixer
+                modelo.setAttribute("animation-mixer", "clip: *; loop: repeat;");
             }
         });
 
